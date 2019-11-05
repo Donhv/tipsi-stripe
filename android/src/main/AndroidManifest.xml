@@ -15,7 +15,7 @@
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
         <data
-            android:scheme="luma.reactnative.showcase"
+            android:scheme="${tipsiStripeRedirectScheme}"
             android:host="stripe-redirect" />
       </intent-filter>
     </activity>
