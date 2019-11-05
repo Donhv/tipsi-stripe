@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.customtabs.CustomTabsIntent;
 
 /**
  * Created by remer on 16/11/17.
@@ -20,11 +21,12 @@ public class OpenBrowserActivity extends Activity {
     super.onCreate(savedInstanceState);
     shouldFinish = false;
 
+//    custom
     url = getIntent().getStringExtra(EXTRA_URL);
-    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url))
-        .addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_CLEAR_TOP | 
-          Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-    startActivity(browserIntent);
+    CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+    CustomTabsIntent customTabsIntent = builder.build();
+    customTabsIntent.launchUrl(this, Uri.parse(url));
+//    custom
   }
 
   @Override
@@ -36,4 +38,11 @@ public class OpenBrowserActivity extends Activity {
     }
     shouldFinish = true;
   }
+  // custom
+  @Override
+  protected void onNewIntent(Intent intent) {
+    StripeModule.getInstance().processRedirect(intent.getData());
+    finish();
+  }
+//  custom
 }

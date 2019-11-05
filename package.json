@@ -1,20 +1,56 @@
 {
-  "name": "tipsi-stripe",
-  "version": "7.5.1",
-  "description": "React Native Stripe binding for iOS/Andriod platforms",
-  "main": "src/index.js",
-  "scripts": {
-    "ci": "scripts/local-ci.sh",
-    "build-docs": "scripts/build-docs.sh",
-    "start-docs": "npm start --prefix website/docs",
-    "test": "tape -r esm src/**/*.test.js",
-    "lint": "eslint",
-    "lint:fix": "eslint --fix"
+  "_args": [
+    [
+      "tipsi-stripe@8.0.0-beta.7",
+      "/Users/hoo/Desktop/JmangoRN/Jmango360"
+    ]
+  ],
+  "_from": "tipsi-stripe@8.0.0-beta.7",
+  "_id": "tipsi-stripe@8.0.0-beta.7",
+  "_inBundle": false,
+  "_integrity": "sha512-HH6ELxBkIQqvghgP2SJjXB3t/uVpdv0DLLnJlWgHkzCu+DK6m2FZcZTqCf1RJN7OEUsm/3+CYPwK+OsDigOVZg==",
+  "_location": "/tipsi-stripe",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "tipsi-stripe@8.0.0-beta.7",
+    "name": "tipsi-stripe",
+    "escapedName": "tipsi-stripe",
+    "rawSpec": "8.0.0-beta.7",
+    "saveSpec": null,
+    "fetchSpec": "8.0.0-beta.7"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/tipsi/tipsi-stripe.git"
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/tipsi-stripe/-/tipsi-stripe-8.0.0-beta.7.tgz",
+  "_spec": "8.0.0-beta.7",
+  "_where": "/Users/hoo/Desktop/JmangoRN/Jmango360",
+  "author": {
+    "name": "Tipsi"
   },
+  "bugs": {
+    "url": "https://github.com/tipsi/tipsi-stripe/issues"
+  },
+  "description": "React Native Stripe binding for iOS/Android platforms",
+  "devDependencies": {
+    "babel-eslint": "^10.0.2",
+    "docusaurus": "^1.11.1",
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb": "^17.1.1",
+    "eslint-config-prettier": "^6.0.0",
+    "eslint-config-tipsi": "2.x",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-prettier": "^3.1.0",
+    "eslint-plugin-react": "^7.14.3",
+    "esm": "3.0.28",
+    "prettier": "1.18.x",
+    "prop-types": "15.6.1",
+    "tape": "4.9.0"
+  },
+  "homepage": "https://github.com/tipsi/tipsi-stripe#readme",
   "keywords": [
     "react",
     "react-native",
@@ -22,27 +58,32 @@
     "ios",
     "android"
   ],
-  "author": "Tipsi",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/tipsi/tipsi-stripe/issues"
+  "main": "src/index.js",
+  "name": "tipsi-stripe",
+  "peerDependencies": {
+    "react": ">=15.4.0 || >=16.x",
+    "react-native": ">=0.40"
   },
-  "homepage": "https://github.com/tipsi/tipsi-stripe#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tipsi/tipsi-stripe.git"
+  },
   "rnpm": {
     "commands": {
       "prelink": "node_modules/tipsi-stripe/scripts/pre-link.sh",
       "postlink": "node_modules/tipsi-stripe/scripts/post-link.sh"
     }
   },
-  "peerDependencies": {
-    "react": ">=15.4.0 || >=16.x",
-    "react-native": ">=0.40"
+  "scripts": {
+    "build-docs": "scripts/build-docs.sh",
+    "ci": "scripts/local-ci.sh",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "prettier": "prettier",
+    "prettier:js": "prettier --write src/*.{js,jsx} src/**/*.{js,jsx} example/src/*.{js,jsx} example/src/**/*.{js,jsx}",
+    "start-docs": "npm start --prefix website/docs",
+    "test": "tape -r esm src/**/*.test.js"
   },
-  "devDependencies": {
-    "eslint": "4.19.1",
-    "eslint-config-tipsi": "2.0.3",
-    "esm": "3.0.28",
-    "prop-types": "15.6.1",
-    "tape": "4.9.0"
-  }
+  "version": "8.0.0-beta.7"
 }

@@ -12,7 +12,8 @@
 #import <React/RCTBridgeModule.h>
 #import <React/RCTConvert.h>
 
-@interface StripeModule : NSObject <RCTBridgeModule, PKPaymentAuthorizationViewControllerDelegate, STPAddCardViewControllerDelegate>
+// CUSTOM - Add:STPCustomerEphemeralKeyProvider
+@interface StripeModule : NSObject <RCTBridgeModule, PKPaymentAuthorizationViewControllerDelegate, STPAddCardViewControllerDelegate, STPCustomerEphemeralKeyProvider>
 
 @property (nonatomic) STPRedirectContext *redirectContext;
 
