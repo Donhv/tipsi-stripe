@@ -713,6 +713,13 @@ RCT_EXPORT_METHOD(createSourceWithParams:(NSDictionary *)params
     
     STPAPIClient* stripeAPIClient = [self newAPIClient];
     
+    NSString *mimic = params[@"mimic"];
+    if (mimic != nil &&  [mimic isEqualToString:@"succeeding_charge"]){
+        [sourceParams setOwner:@{@"name": @"succeeding_charge"}];
+    } else if(mimic != nil && [mimic isEqualToString:@"failing_charge"]){
+        [sourceParams setOwner:@{@"name": @"failing_charge"}];
+    }
+    
     [stripeAPIClient createSourceWithParams:sourceParams completion:^(STPSource *source, NSError *error) {
         self->requestIsCompleted = YES;
         self->savedSource = source;
