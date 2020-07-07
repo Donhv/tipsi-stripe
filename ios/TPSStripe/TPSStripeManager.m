@@ -15,6 +15,8 @@
 #import "TPSError.h"
 #import "TPSStripeManager+Constants.h"
 
+#define MAX_POLL_COUNT 10
+
 // If you change these, make sure to also change:
 //  android/src/main/java/com/gettipsi/stripe/StripeModule.java
 // Relevant Docs:
@@ -270,6 +272,7 @@ void initializeTPSPaymentNetworksWithConditionalMappings() {
     STPSource *savedSource;
     NSString *ephemeralKey;
     STPJSONResponseCompletionBlock ephemeralKeyReceiver;
+    NSInteger pollCount;
 }
 @end
 @implementation StripeModule
@@ -782,52 +785,89 @@ RCT_EXPORT_METHOD(createSourceWithParams:(NSDictionary *)params
 #pragma mark - CUSTOM ===========================> openGateWaySourceParams
 RCT_EXPORT_METHOD(openGateWaySourceParams:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
     STPAPIClient* stripeAPIClient = [self newAPIClient];
-    
+    //reset poll count
+    self->pollCount = 0;
     if (savedSource && savedSource.redirect) {
         self.redirectContext = [[STPRedirectContext alloc] initWithSource:savedSource completion:^(NSString *sourceID, NSString *clientSecret, NSError *error) {
             if (error) {
                 NSDictionary *jsError = [self->errorCodes valueForKey:kErrorKeyRedirectSpecific];
                 reject(jsError[kErrorKeyCode], error.localizedDescription, nil);
             } else {
-                [stripeAPIClient startPollingSourceWithId:sourceID clientSecret:clientSecret timeout:10 completion:^(STPSource *source, NSError *error) {
-                    if (error) {
-                        NSDictionary *jsError = [self->errorCodes valueForKey:kErrorKeyApi];
-                        reject(jsError[kErrorKeyCode], error.localizedDescription, nil);
-                    } else {
-                        switch (source.status) {
-                            case STPSourceStatusChargeable:
-                            case STPSourceStatusConsumed:
-                                resolve([self convertSourceObject:source]);
-                                break;
-                            case STPSourceStatusCanceled: {
-                                NSDictionary *error = [self->errorCodes valueForKey:kErrorKeySourceStatusCanceled];
-                                reject(error[kErrorKeyCode], error[kErrorKeyDescription], nil);
-                            }
-                                break;
-                            case STPSourceStatusPending: {
-                                NSDictionary *error = [self->errorCodes valueForKey:kErrorKeySourceStatusPending];
-                                reject(error[kErrorKeyCode], error[kErrorKeyDescription], nil);
-                            }
-                                break;
-                            case STPSourceStatusFailed: {
-                                NSDictionary *error = [self->errorCodes valueForKey:kErrorKeySourceStatusFailed];
-                                reject(error[kErrorKeyCode], error[kErrorKeyDescription], nil);
-                            }
-                                break;
-                            case STPSourceStatusUnknown: {
-                                NSDictionary *error = [self->errorCodes valueForKey:kErrorKeySourceStatusUnknown];
-                                reject(error[kErrorKeyCode], error[kErrorKeyDescription], nil);
-                            }
-                                break;
-                        }
-                    }
-                }];
+                [self pollForSourceStatusWithId:sourceID clientSecret:clientSecret resolve:resolve rejecter:reject];
+                
+//                [stripeAPIClient startPollingSourceWithId:sourceID clientSecret:clientSecret timeout:10 completion:^(STPSource *source, NSError *error) {
+//                    if (error) {
+//                        NSDictionary *jsError = [self->errorCodes valueForKey:kErrorKeyApi];
+//                        reject(jsError[kErrorKeyCode], error.localizedDescription, nil);
+//                    } else {
+//                        switch (source.status) {
+//                            case STPSourceStatusChargeable:
+//                            case STPSourceStatusConsumed:
+//                                resolve([self convertSourceObject:source]);
+//                                break;
+//                            case STPSourceStatusCanceled: {
+//                                NSDictionary *error = [self->errorCodes valueForKey:kErrorKeySourceStatusCanceled];
+//                                reject(error[kErrorKeyCode], error[kErrorKeyDescription], nil);
+//                            }
+//                                break;
+//                            case STPSourceStatusPending: {
+//                                NSDictionary *error = [self->errorCodes valueForKey:kErrorKeySourceStatusPending];
+//                                reject(error[kErrorKeyCode], error[kErrorKeyDescription], nil);
+//                            }
+//                                break;
+//                            case STPSourceStatusFailed: {
+//                                NSDictionary *error = [self->errorCodes valueForKey:kErrorKeySourceStatusFailed];
+//                                reject(error[kErrorKeyCode], error[kErrorKeyDescription], nil);
+//                            }
+//                                break;
+//                            case STPSourceStatusUnknown: {
+//                                NSDictionary *error = [self->errorCodes valueForKey:kErrorKeySourceStatusUnknown];
+//                                reject(error[kErrorKeyCode], error[kErrorKeyDescription], nil);
+//                            }
+//                                break;
+//                        }
+//                    }
+//                }];
             }
         }];
         [self.redirectContext startSafariViewControllerRedirectFlowFromViewController:[self authenticationPresentingViewController]];
     } else {
         resolve([self convertSourceObject:savedSource]);
     }
+}
+
+- (void) pollForSourceStatusWithId:(NSString *)identifier clientSecret:(NSString *)secret resolve:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject{
+    [[STPAPIClient sharedClient] retrieveSourceWithId:identifier clientSecret:secret completion:^(STPSource * _Nullable source, NSError * _Nullable error) {
+        if (error) {
+            NSDictionary *jsError = [self->errorCodes valueForKey:kErrorKeyRedirectSpecific];
+            reject(jsError[kErrorKeyCode], error.localizedDescription, nil);
+        } else {
+            // Increase count
+            self->pollCount += 1;
+            
+            // Check status source
+            if (source.status == STPSourceStatusChargeable) {
+                resolve([self convertSourceObject:source]);
+            } else if (source.status == STPSourceStatusPending && (int)self->pollCount < MAX_POLL_COUNT) {
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    [self pollForSourceStatusWithId:identifier clientSecret:secret resolve:resolve rejecter:reject];
+                });
+            } else if (source.status == STPSourceStatusPending) {
+                resolve([self convertSourceObject:source]);
+            } else if ( source.status == STPSourceStatusFailed) {
+                NSDictionary *error = [self->errorCodes valueForKey:kErrorKeySourceStatusFailed];
+                reject(error[kErrorKeyCode], error[kErrorKeyDescription], nil);
+            } else if (source.status == STPSourceStatusConsumed) {
+                resolve([self convertSourceObject:source]);
+            } else if (source.status == STPSourceStatusCanceled) {
+                NSDictionary *error = [self->errorCodes valueForKey:kErrorKeySourceStatusCanceled];
+                reject(error[kErrorKeyCode], error[kErrorKeyDescription], nil);
+            } else {
+                NSDictionary *error = [self->errorCodes valueForKey:kErrorKeySourceStatusUnknown];
+                reject(error[kErrorKeyCode], error[kErrorKeyDescription], nil);
+            }
+        }
+    }];
 }
 
 //RCT_EXPORT_METHOD(paymentRequestWithCardForm:(NSDictionary *)options
