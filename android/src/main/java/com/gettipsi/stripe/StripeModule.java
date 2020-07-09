@@ -110,7 +110,6 @@ public class StripeModule extends ReactContextBaseJavaModule {
     private PayFlow mPayFlow;
     private ReadableMap mErrorCodes;
     private int recallTime = 0;
-    private Handler handler = new Handler();
 
     private final ActivityEventListener mActivityEventListener = new BaseActivityEventListener() {
 
